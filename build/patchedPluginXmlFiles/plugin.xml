@@ -1,0 +1,32 @@
+<idea-plugin>
+  <id>Jaina Plugin</id>
+  <name>Plugin display name here</name>
+  <version>0.20</version>
+  <vendor email="450105071@qq.com" url="http://www.yourcompany.com">e看牙</vendor>
+  <description>
+      this is a plugin for android,
+      and You don't need to define VIEW anymore.
+      &lt;br&gt;
+      &lt;em&gt;most HTML tags may be used&lt;/em&gt;
+    
+  </description>
+  <change-notes>
+      this is first verison.&lt;br&gt;
+      &lt;em&gt;most HTML tags may be used&lt;/em&gt;
+    
+  </change-notes>
+  <idea-version since-build="171.3780" until-build="171.*"/>
+  <extensionPoints>
+    <extensionPoint name="processor" interface="jaina.intellij.plugin.processor.Processor"/>
+  </extensionPoints>
+  <extensions defaultExtensionNs="Jaina Plugin">
+    <processor implementation="jaina.intellij.plugin.processor.field.ViewFieldProcessor"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <projectService serviceImplementation="jaina.intellij.plugin.provider.LombokProcessorProvider"/>
+    <applicationService serviceImplementation="jaina.intellij.plugin.config.ConfigDiscovery"/>
+    <lang.psiAugmentProvider implementation="jaina.intellij.plugin.provider.LombokAugmentProvider"/>
+    <fileBasedIndex implementation="jaina.intellij.plugin.config.LombokConfigIndex"/>
+  </extensions>
+  <actions/>
+</idea-plugin>

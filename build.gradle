@@ -1,0 +1,110 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+    maven { url 'https://jitpack.io' }
+  }
+  dependencies {
+    classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.0-SNAPSHOT"
+    classpath "com.github.hurricup:gradle-grammar-kit-plugin:2018.1.2"
+  }
+}
+
+import org.jetbrains.grammarkit.tasks.GenerateLexer
+import org.jetbrains.grammarkit.tasks.GenerateParser
+
+import javax.tools.ToolProvider
+
+allprojects {
+
+  apply plugin: 'java'
+  apply plugin: 'idea'
+  apply plugin: 'org.jetbrains.intellij'
+  apply plugin: 'org.jetbrains.grammarkit'
+  apply plugin: 'jacoco'
+
+  group pluginGroup
+  version = pluginVersion
+
+  sourceCompatibility = javaVersion
+  targetCompatibility = javaVersion
+
+  tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+  sourceSets {
+    main {
+      java {
+        srcDirs = ['src']
+      }
+      resources {
+        srcDirs = ['resources']
+      }
+    }
+  }
+
+  repositories {
+    mavenCentral()
+    maven { url 'https://dl.bintray.com/jetbrains/markdown' }
+    maven { url 'https://jitpack.io' }
+  }
+}
+
+idea {
+  project {
+    languageLevel = javaVersion
+  }
+}
+
+intellij {
+  def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
+  version = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
+  println "Building for IntelliJ version: ${version}"
+
+  pluginName pluginName
+  updateSinceUntilBuild true
+  sameSinceUntilBuild false
+  plugins 'coverage'
+}
+
+dependencies {
+  // Should be available in the run-time
+  compileOnly files(((URLClassLoader) ToolProvider.getSystemToolClassLoader()).getURLs())
+
+  compile 'org.javassist:javassist:3.20.0-GA'
+
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+
+grammarKit {
+  //tag or short commit hash of IntelliJ patched JFlex
+  jflexRelease = '1.7.0-1'
+  //tag or short commit hash of Grammar-Kit to use
+  grammarKitRelease = '34fd65b92a'
+}
+
+plugins.withType(JavaPlugin) {
+  test {
+    systemProperty "NO_FS_ROOTS_ACCESS_CHECK", "true"
+  }
+}
+
+jacocoTestReport {
+  reports {
+    xml.enabled = true
+    html.enabled = true
+  }
+}
+
+// Configurations
+configurations {
+
+}
+
+clean.doFirst {
+  delete 'cd', 'out'
+}
+
+//compileJava.dependsOn generateLombokConfigLexer
+//check.dependsOn jacocoTestReport

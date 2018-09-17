@@ -1,0 +1,125 @@
+package jaina.intellij.plugin.processor;
+
+import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.psi.*;
+import com.intellij.util.ArrayUtil;
+import jaina.intellij.plugin.config.ConfigDiscovery;
+import jaina.intellij.plugin.config.ConfigKey;
+import jaina.intellij.plugin.field.AccessorsInfo;
+import jaina.intellij.plugin.model.LombokPsiElementUsage;
+import jaina.intellij.plugin.util.LombokProcessorUtil;
+import jaina.intellij.plugin.util.LombokUtils;
+import jaina.intellij.plugin.util.PsiAnnotationSearchUtil;
+import jaina.intellij.plugin.util.PsiAnnotationUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Base lombok processor class
+ *
+ * @author Plushnikov Michail
+ */
+public abstract class AbstractProcessor implements Processor {
+    /**
+     * Annotation classes this processor supports
+     */
+    private final Class<? extends Annotation>[] supportedAnnotationClasses;
+    /**
+     * Kind of output elements this processor supports
+     */
+    private final Class<? extends PsiElement> supportedClass;
+
+    /**
+     * Constructor for all Lombok-Processors
+     *
+     * @param supportedClass           kind of output elements this processor supports
+     * @param supportedAnnotationClass annotation this processor supports
+     */
+    protected AbstractProcessor(@NotNull Class<? extends PsiElement> supportedClass,
+                                @NotNull Class<? extends Annotation> supportedAnnotationClass) {
+        this.supportedClass = supportedClass;
+        this.supportedAnnotationClasses = new Class[]{supportedAnnotationClass};
+    }
+
+    /**
+     * Constructor for all Lombok-Processors
+     *
+     * @param supportedClass              kind of output elements this processor supports
+     * @param supportedAnnotationClass    annotation this processor supports
+     * @param equivalentAnnotationClasses any other equivalent annotations
+     */
+    protected AbstractProcessor(@NotNull Class<? extends PsiElement> supportedClass,
+                                @NotNull Class<? extends Annotation> supportedAnnotationClass,
+                                @NotNull Class<? extends Annotation>... equivalentAnnotationClasses) {
+        this.supportedClass = supportedClass;
+        this.supportedAnnotationClasses = ArrayUtil.prepend(supportedAnnotationClass, equivalentAnnotationClasses);
+    }
+
+    @NotNull
+    public final Class<? extends Annotation>[] getSupportedAnnotationClasses() {
+        return supportedAnnotationClasses;
+    }
+
+    @NotNull
+    @Override
+    public final Class<? extends PsiElement> getSupportedClass() {
+        return supportedClass;
+    }
+
+    @Override
+    public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
+        return true;
+    }
+
+    @NotNull
+    public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    public abstract Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass);
+
+    protected String getGetterName(final @NotNull PsiField psiField) {
+        final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
+
+        final String psiFieldName = psiField.getName();
+        final boolean isBoolean = PsiType.BOOLEAN.equals(psiField.getType());
+
+        return LombokUtils.toGetterName(accessorsInfo, psiFieldName, isBoolean);
+    }
+
+    protected static boolean readAnnotationOrConfigProperty(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass,
+                                                            @NotNull String annotationParameter, @NotNull ConfigKey configKey) {
+        final boolean result;
+        final Boolean declaredAnnotationValue = PsiAnnotationUtil.getDeclaredBooleanAnnotationValue(psiAnnotation, annotationParameter);
+        if (null == declaredAnnotationValue) {
+            result = ConfigDiscovery.getInstance().getBooleanLombokConfigProperty(configKey, psiClass);
+        } else {
+            result = declaredAnnotationValue;
+        }
+        return result;
+    }
+
+    protected static void addOnXAnnotations(@Nullable PsiAnnotation processedAnnotation,
+                                            @NotNull PsiModifierList modifierList,
+                                            @NotNull String onXParameterName) {
+        if (processedAnnotation == null) {
+            return;
+        }
+
+        Collection<String> annotationsToAdd = LombokProcessorUtil.getOnX(processedAnnotation, onXParameterName);
+        for (String annotation : annotationsToAdd) {
+            modifierList.addAnnotation(annotation);
+        }
+    }
+
+    public LombokPsiElementUsage checkFieldUsage(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation) {
+        return LombokPsiElementUsage.NONE;
+    }
+
+}

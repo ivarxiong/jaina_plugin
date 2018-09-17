@@ -1,0 +1,50 @@
+<idea-plugin>
+  <id>Jaina Plugin</id>
+  <name>Plugin display name here</name>
+  <version>1.0</version>
+  <vendor email="450105071@qq.com" url="http://www.yourcompany.com">e看牙</vendor>
+
+  <description><![CDATA[
+      this is a plugin for android,
+      and You don't need to define VIEW anymore.
+      <br>
+      <em>most HTML tags may be used</em>
+    ]]>
+  </description>
+
+  <change-notes><![CDATA[
+      this is first verison.<br>
+      <em>most HTML tags may be used</em>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="145.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <extensionPoints>
+    <extensionPoint name="processor" interface="jaina.intellij.plugin.processor.Processor"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="Jaina Plugin">
+    <processor implementation="jaina.intellij.plugin.processor.field.ViewFieldProcessor"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+    <projectService serviceImplementation="jaina.intellij.plugin.provider.LombokProcessorProvider"/>
+    <applicationService serviceImplementation="jaina.intellij.plugin.config.ConfigDiscovery"/>
+    <!---->
+    <lang.psiAugmentProvider implementation="jaina.intellij.plugin.provider.LombokAugmentProvider"/>
+    <fileBasedIndex implementation="jaina.intellij.plugin.config.LombokConfigIndex"/>
+  </extensions>
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+</idea-plugin>
