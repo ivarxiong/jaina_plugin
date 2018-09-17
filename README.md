@@ -19,3 +19,7 @@ ideaVersion=2017.3
 #ideaVersion=2018.1
 #ideaVersion=2018.1.6
 #ideaVersion=2017.1.5
+
+执行 ./gradew build 
+
+插件在 build/lib/ 下
