@@ -23,3 +23,7 @@ ideaVersion=2017.3
 执行 ./gradew build 
 
 插件在 build/lib/ 下
+
+
+已经编译好的插件 https://github.com/ivarxiong/jaina_plugin/releases/tag/build
+请选择对应版本安装
